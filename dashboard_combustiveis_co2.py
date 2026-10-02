@@ -85,24 +85,7 @@ def read_tabular_bytes(filename: str, data: bytes) -> pd.DataFrame:
         for sep in [";", ",", "\t"]:
             try:
                 df = pd.read_csv(io.BytesIO(data), encoding=enc, sep=sep, low_memory=False)
-                if best is None or df.shape[1] > be
-st.title("📊 Dashboard Analítico - Combustíveis e Emissões")
-
-st.markdown("## 🎯 Objetivo")
-st.markdown("Analisar dados de combustíveis e emissões para identificar padrões, tendências e relações relevantes.")
-
-st.markdown("## ❓ Perguntas Analíticas")
-st.markdown("""
-1. Como evoluiu o consumo de combustíveis ao longo do tempo?
-2. Quais regiões apresentam maior consumo?
-3. Existe relação entre consumo de combustível e emissão de CO2?
-4. Qual combustível é mais utilizado?
-5. Há crescimento no uso de veículos eletrificados?
-6. Existem diferenças significativas entre estados?
-7. Há tendência de aumento ou redução de emissões?
-""")
-
-st.shape[1]:
+                if best is None or df.shape[1] > best.shape[1]:
                     best = df
             except Exception:
                 continue
@@ -388,7 +371,7 @@ def render_summary() -> None:
         labels={"value": "Preco (R$/litro)", "variable": "Serie"},
     )
     fig.for_each_trace(lambda t: t.update(name=t.name.replace("preco_etanol", "Etanol").replace("preco_gasolina", "Gasolina")))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     if not co2.empty:
         cover = sorted(co2["ano"].tolist())
@@ -421,7 +404,7 @@ def render_market_views() -> None:
         title="Evolucao anual por produto",
         labels={"valor_venda_num": "Preco medio (R$/litro)", "ano": "Ano"},
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     c1, c2 = st.columns(2)
     with c1:
@@ -439,7 +422,7 @@ def render_market_views() -> None:
             title="Mapa de calor: preco medio por regiao e ano",
             labels={"x": "Ano", "y": "Regiao", "color": "R$/litro"},
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with c2:
         if FUEL_ANNUAL_UF_FILE.exists():
@@ -463,7 +446,7 @@ def render_market_views() -> None:
         )
         fig.update_traces(textposition="outside", cliponaxis=False)
         fig.update_layout(coloraxis_showscale=False, margin=dict(r=70), xaxis_title="Preco medio (R$/litro)")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 
@@ -493,7 +476,7 @@ def render_inflation_views() -> None:
     )
     fig.for_each_trace(lambda t: t.update(name=t.name.replace("var_preco_comb_anual_pct", "Combustiveis")))
     fig.update_layout(yaxis_title="Variacao anual (%)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     c1, c2 = st.columns(2)
     with c1:
@@ -507,13 +490,13 @@ def render_inflation_views() -> None:
             labels={"var_preco_comb_anual_pct": "Combustiveis (%)", "IPCA transportes": "IPCA transportes (%)"},
         )
         scat.update_traces(textposition="top center")
-        st.plotly_chart(scat, use_container_width=True)
+        st.plotly_chart(scat, width="stretch")
 
     with c2:
         corr_cols = ["var_preco_comb_anual_pct", "IPCA geral", "IPCA transportes", "IPCA alimentacao e bebidas"]
         corr = merged[corr_cols].corr().round(3)
         heat = px.imshow(corr, text_auto=True, color_continuous_scale="RdBu", zmin=-1, zmax=1, title="Matriz de correlacao")
-        st.plotly_chart(heat, use_container_width=True)
+        st.plotly_chart(heat, width="stretch")
 
 
 
@@ -573,7 +556,7 @@ def render_sales_volume_views() -> None:
             title="Volume anual empilhado por combustivel",
             labels={"volume": "Volume", "ano": "Ano", "produto_grupo": "Produto"},
         )
-        st.plotly_chart(bar, use_container_width=True)
+        st.plotly_chart(bar, width="stretch")
 
     with c2:
         line = px.line(
@@ -584,7 +567,7 @@ def render_sales_volume_views() -> None:
             title="Share anual do etanol no volume",
             labels={"share_etanol": "Share etanol", "ano": "Ano"},
         )
-        st.plotly_chart(line, use_container_width=True)
+        st.plotly_chart(line, width="stretch")
 
     co2 = load_co2e_annual()[["ano", "co2e_mt"]]
     merged = pivot.merge(co2, on="ano", how="left")
@@ -608,7 +591,7 @@ def render_sales_volume_views() -> None:
         labels={"share_etanol": "Share etanol", "co2e_mt": "CO2e nacional (Mt)"},
     )
     scat.update_traces(textposition="top center")
-    st.plotly_chart(scat, use_container_width=True)
+    st.plotly_chart(scat, width="stretch")
 
 
 
@@ -626,11 +609,11 @@ def render_emission_transition_views() -> None:
     with c1:
         fig = px.line(panel, x="ano", y="co2e_mt", markers=True, title="CO2e nacional")
         fig.update_layout(yaxis_title="Mt CO2e")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     with c2:
         fig = px.line(panel, x="ano", y="ratio_etanol_gasolina", markers=True, title="Razao etanol/gasolina")
         fig.update_layout(yaxis_title="Razao de preco")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     scat = px.scatter(
         panel,
@@ -642,7 +625,7 @@ def render_emission_transition_views() -> None:
         labels={"ratio_etanol_gasolina": "Razao etanol/gasolina", "co2e_mt": "CO2e (Mt)"},
     )
     scat.update_traces(textposition="top center")
-    st.plotly_chart(scat, use_container_width=True)
+    st.plotly_chart(scat, width="stretch")
 
     ev = load_ev_annual()
     if ev.empty:
@@ -654,13 +637,13 @@ def render_emission_transition_views() -> None:
     with c3:
         fig = px.line(merged_ev, x="ano", y="total_eletrificados", markers=True, title="Serie anual de eletrificados")
         fig.update_layout(yaxis_title="Total")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     with c4:
         avail = merged_ev.dropna(subset=["co2e_mt"])
         if not avail.empty:
             fig = px.scatter(avail, x="total_eletrificados", y="co2e_mt", text="ano", trendline="ols" if len(avail) >= 3 else None, title="Eletrificados vs CO2e")
             fig.update_traces(textposition="top center")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
 
 
@@ -710,7 +693,7 @@ def render_regional_rankings() -> None:
             title="Distribuicao de precos por regiao",
         )
         fig.update_layout(showlegend=False, xaxis_title="Regiao", yaxis_title="Preco (R$/litro)")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with c2:
         if FUEL_ANNUAL_UF_FILE.exists():
@@ -733,7 +716,7 @@ def render_regional_rankings() -> None:
         )
         fig.update_traces(textposition="outside", cliponaxis=False)
         fig.update_layout(coloraxis_showscale=False, margin=dict(r=70), xaxis_title="Preco medio (R$/litro)")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 
@@ -754,6 +737,22 @@ def main() -> None:
     ])
 
     with tabs[0]:
+        with st.expander("🎯 Objetivo e perguntas analíticas", expanded=False):
+            st.markdown(
+                "Analisar dados de combustíveis e emissões para identificar padrões, "
+                "tendências e relações relevantes."
+            )
+            st.markdown(
+                """
+1. Como evoluiu o consumo de combustíveis ao longo do tempo?
+2. Quais regiões apresentam maior consumo?
+3. Existe relação entre consumo de combustível e emissão de CO2?
+4. Qual combustível é mais utilizado?
+5. Há crescimento no uso de veículos eletrificados?
+6. Existem diferenças significativas entre estados?
+7. Há tendência de aumento ou redução de emissões?
+"""
+            )
         render_summary()
         if REPORT_FILE.exists():
             with st.expander("Resumo textual da analise"):
